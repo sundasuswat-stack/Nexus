@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import SignatureCanvas from 'react-signature-canvas';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -45,8 +46,9 @@ export const DocumentChamberPage: React.FC = () => {
 
   const [previewDoc, setPreviewDoc] = useState<DealDocument | null>(null);
   const [signModalDoc, setSignModalDoc] = useState<DealDocument | null>(null);
-  const [signatureInput, setSignatureInput] = useState('');
+  const [isSigEmpty, setIsSigEmpty] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sigCanvasRef = useRef<SignatureCanvas>(null);
 
   const statusColor: Record<DocStatus, 'accent' | 'primary' | 'success'> = {
     Draft: 'accent',
@@ -87,20 +89,24 @@ export const DocumentChamberPage: React.FC = () => {
 
   const openSignModal = (doc: DealDocument) => {
     setSignModalDoc(doc);
-    setSignatureInput('');
+    setIsSigEmpty(true);
+  };
+
+  const clearSignature = () => {
+    sigCanvasRef.current?.clear();
+    setIsSigEmpty(true);
   };
 
   const confirmSignature = () => {
-    if (!signModalDoc || !signatureInput.trim()) return;
+    if (!signModalDoc || !sigCanvasRef.current || sigCanvasRef.current.isEmpty()) return;
     setDocuments((prev) =>
       prev.map((d) =>
         d.id === signModalDoc.id
-          ? { ...d, status: 'Signed', signature: signatureInput.trim() }
+          ? { ...d, status: 'Signed', signature: 'Signed electronically' }
           : d
       )
     );
     setSignModalDoc(null);
-    setSignatureInput('');
   };
 
   return (
@@ -152,7 +158,7 @@ export const DocumentChamberPage: React.FC = () => {
                   <p className="font-medium text-gray-900 truncate">{doc.name}</p>
                   <p className="text-xs text-gray-400">
                     {doc.size} • Uploaded {doc.uploadedOn}
-                    {doc.signature && ` • Signed by ${doc.signature}`}
+                    {doc.signature && ` • ${doc.signature}`}
                   </p>
                 </div>
               </div>
@@ -228,7 +234,7 @@ export const DocumentChamberPage: React.FC = () => {
         </div>
       )}
 
-      {/* E-Signature Modal */}
+      {/* E-Signature Modal with Drawing Pad */}
       {signModalDoc && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <Card className="p-6 w-full max-w-md">
@@ -238,16 +244,27 @@ export const DocumentChamberPage: React.FC = () => {
             <p className="text-sm text-gray-500 mb-4">{signModalDoc.name}</p>
 
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type your full name to sign
+              Draw your signature below
             </label>
-            <input
-              type="text"
-              value={signatureInput}
-              onChange={(e) => setSignatureInput(e.target.value)}
-              placeholder="e.g. Sarah Johnson"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              style={{ fontFamily: 'cursive', fontSize: '1.1rem' }}
-            />
+            <div className="border-2 border-gray-300 rounded-md bg-gray-50 overflow-hidden">
+              <SignatureCanvas
+                ref={sigCanvasRef}
+                penColor="#1E3A8A"
+                canvasProps={{
+                  width: 400,
+                  height: 160,
+                  className: 'w-full',
+                  style: { touchAction: 'none' },
+                }}
+                onEnd={() => setIsSigEmpty(false)}
+              />
+            </div>
+            <button
+              onClick={clearSignature}
+              className="text-xs text-primary-600 hover:underline mt-2"
+            >
+              Clear signature
+            </button>
 
             <div className="flex justify-end gap-2 mt-6">
               <Button variant="ghost" onClick={() => setSignModalDoc(null)}>
@@ -255,7 +272,7 @@ export const DocumentChamberPage: React.FC = () => {
               </Button>
               <Button
                 variant="success"
-                disabled={!signatureInput.trim()}
+                disabled={isSigEmpty}
                 onClick={confirmSignature}
               >
                 Confirm Signature
