@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Home, Building2, CircleDollarSign, Users, MessageCircle, 
-  Bell, FileText, Settings, HelpCircle, Calendar, Video, FolderLock, Wallet
+  Bell, FileText, Settings, HelpCircle, Calendar, Video, FolderLock, Wallet, ShieldCheck
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -44,6 +44,7 @@ export const Sidebar: React.FC = () => {
     { to: '/video-call', icon: <Video size={20} />, text: 'Video Call' },
     { to: '/document-chamber', icon: <FolderLock size={20} />, text: 'Document Chamber' },
     { to: '/payments', icon: <Wallet size={20} />, text: 'Payments' },
+    { to: '/security', icon: <ShieldCheck size={20} />, text: 'Security' },
     { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
     { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
     { to: '/documents', icon: <FileText size={20} />, text: 'Documents' },
@@ -57,6 +58,7 @@ export const Sidebar: React.FC = () => {
     { to: '/video-call', icon: <Video size={20} />, text: 'Video Call' },
     { to: '/document-chamber', icon: <FolderLock size={20} />, text: 'Document Chamber' },
     { to: '/payments', icon: <Wallet size={20} />, text: 'Payments' },
+    { to: '/security', icon: <ShieldCheck size={20} />, text: 'Security' },
     { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
     { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
     { to: '/deals', icon: <FileText size={20} />, text: 'Deals' },

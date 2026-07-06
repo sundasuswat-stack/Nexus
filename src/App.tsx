@@ -30,6 +30,7 @@ import { MeetingsPage } from './pages/meetings/MeetingsPage';
 import { VideoCallPage } from './pages/videocall/VideoCallPage';
 import { DocumentChamberPage } from './pages/documentchamber/DocumentChamberPage';
 import { PaymentsPage } from './pages/payments/PaymentsPage';
+import { SecurityPage } from './pages/security/SecurityPage';
 
 // Chat Pages
 import { ChatPage } from './pages/chat/ChatPage';
@@ -106,6 +107,11 @@ function App() {
           {/* Payments Route */}
           <Route path="/payments" element={<DashboardLayout />}>
             <Route index element={<PaymentsPage />} />
+          </Route>
+
+          {/* Security Route */}
+          <Route path="/security" element={<DashboardLayout />}>
+            <Route index element={<SecurityPage />} />
           </Route>
           
           {/* Chat Routes */}
