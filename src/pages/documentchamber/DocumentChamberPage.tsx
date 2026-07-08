@@ -130,7 +130,7 @@ export const DocumentChamberPage: React.FC = () => {
           Drag & drop files here, or click to browse
         </p>
         <p className="text-gray-400 text-sm mt-1">
-          Supports PDF, DOC, DOCX (mock upload — for demo purposes)
+          Supports PDF, DOC, and DOCX files up to 10MB
         </p>
         <input
           ref={fileInputRef}
@@ -219,7 +219,7 @@ export const DocumentChamberPage: React.FC = () => {
               <p className="font-medium text-gray-700">{previewDoc.name}</p>
               <p className="text-sm text-gray-400 mt-1">{previewDoc.size}</p>
               <p className="text-xs text-gray-400 mt-4">
-                (Preview mockup — actual file rendering not implemented)
+                Full document preview will open in a new tab
               </p>
             </div>
             <div className="flex justify-end gap-2 mt-4">

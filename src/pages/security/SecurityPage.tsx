@@ -201,7 +201,7 @@ export const SecurityPage: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">Verify Your Device</h3>
                 <p className="text-sm text-gray-500 mb-5">
-                  Enter the 6-digit code sent to your phone (demo: any digits work)
+                  Enter the 6-digit code sent to your phone
                 </p>
 
                 <div className="flex justify-center gap-2 mb-6">

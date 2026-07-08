@@ -24,7 +24,15 @@ interface MeetingEvent {
   end: Date;
   status: 'available' | 'pending' | 'confirmed' | 'declined';
   requester?: string;
+  note?: string;
 }
+
+const contacts = [
+  'Michael Rodriguez',
+  'Sarah Chen',
+  'David Park',
+  'Amara Okafor',
+];
 
 export const MeetingsPage: React.FC = () => {
   const [events, setEvents] = useState<MeetingEvent[]>([
@@ -37,15 +45,15 @@ export const MeetingsPage: React.FC = () => {
     },
     {
       id: '2',
-      title: 'Meeting with Ali (Pending)',
+      title: 'Meeting with Michael Rodriguez',
       start: new Date(new Date().setDate(new Date().getDate() + 1)),
       end: new Date(new Date().setDate(new Date().getDate() + 1)),
       status: 'pending',
-      requester: 'Ali Khan',
+      requester: 'Michael Rodriguez',
     },
     {
       id: '3',
-      title: 'Confirmed: Investor Call',
+      title: 'Investor Call',
       start: new Date(new Date().setDate(new Date().getDate() + 2)),
       end: new Date(new Date().setDate(new Date().getDate() + 2)),
       status: 'confirmed',
@@ -53,20 +61,22 @@ export const MeetingsPage: React.FC = () => {
   ]);
 
   const [selectedEvent, setSelectedEvent] = useState<MeetingEvent | null>(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestContact, setRequestContact] = useState(contacts[0]);
+  const [requestDate, setRequestDate] = useState('');
+  const [requestTime, setRequestTime] = useState('10:00');
+  const [requestNote, setRequestNote] = useState('');
 
   // Add new availability slot by clicking/dragging on calendar
   const handleSelectSlot = (slotInfo: SlotInfo) => {
-    const title = window.prompt('Add availability slot title (e.g. "Available")');
-    if (title) {
-      const newEvent: MeetingEvent = {
-        id: Date.now().toString(),
-        title,
-        start: slotInfo.start,
-        end: slotInfo.end,
-        status: 'available',
-      };
-      setEvents((prev) => [...prev, newEvent]);
-    }
+    const newEvent: MeetingEvent = {
+      id: Date.now().toString(),
+      title: 'Available Slot',
+      start: slotInfo.start,
+      end: slotInfo.end,
+      status: 'available',
+    };
+    setEvents((prev) => [...prev, newEvent]);
   };
 
   const handleSelectEvent = (event: MeetingEvent) => {
@@ -75,16 +85,47 @@ export const MeetingsPage: React.FC = () => {
 
   const acceptMeeting = (id: string) => {
     setEvents((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, status: 'confirmed', title: e.title.replace('(Pending)', '(Confirmed)') } : e))
+      prev.map((e) => (e.id === id ? { ...e, status: 'confirmed' } : e))
     );
     setSelectedEvent(null);
   };
 
   const declineMeeting = (id: string) => {
     setEvents((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, status: 'declined', title: e.title.replace('(Pending)', '(Declined)') } : e))
+      prev.map((e) => (e.id === id ? { ...e, status: 'declined' } : e))
     );
     setSelectedEvent(null);
+  };
+
+  const openRequestModal = () => {
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 3);
+    setRequestDate(defaultDate.toISOString().split('T')[0]);
+    setRequestTime('10:00');
+    setRequestContact(contacts[0]);
+    setRequestNote('');
+    setShowRequestModal(true);
+  };
+
+  const sendMeetingRequest = () => {
+    if (!requestDate) return;
+    const [hours, minutes] = requestTime.split(':').map(Number);
+    const start = new Date(requestDate);
+    start.setHours(hours, minutes, 0, 0);
+    const end = new Date(start);
+    end.setHours(end.getHours() + 1);
+
+    const newEvent: MeetingEvent = {
+      id: Date.now().toString(),
+      title: `Meeting with ${requestContact}`,
+      start,
+      end,
+      status: 'pending',
+      requester: requestContact,
+      note: requestNote.trim() || undefined,
+    };
+    setEvents((prev) => [...prev, newEvent]);
+    setShowRequestModal(false);
   };
 
   // Color-code events based on status
@@ -114,11 +155,16 @@ export const MeetingsPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Meeting Scheduling</h1>
-        <p className="text-gray-500 mt-1">
-          Manage your availability, meeting requests, and confirmed meetings.
-        </p>
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Meeting Scheduling</h1>
+          <p className="text-gray-500 mt-1">
+            Manage your availability, meeting requests, and confirmed meetings.
+          </p>
+        </div>
+        <Button variant="primary" onClick={openRequestModal}>
+          Request Meeting
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -184,7 +230,7 @@ export const MeetingsPage: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-3">
-              Tip: Click and drag on the calendar to add a new availability slot.
+              Tip: click and drag on the calendar to block out an availability slot.
             </p>
           </Card>
         </div>
@@ -200,10 +246,8 @@ export const MeetingsPage: React.FC = () => {
             <p className="text-gray-500 text-sm mb-1">
               {format(selectedEvent.start, 'PPP p')} — {format(selectedEvent.end, 'p')}
             </p>
-            {selectedEvent.requester && (
-              <p className="text-gray-500 text-sm mb-4">
-                Requested by: {selectedEvent.requester}
-              </p>
+            {selectedEvent.note && (
+              <p className="text-gray-500 text-sm mb-1 italic">"{selectedEvent.note}"</p>
             )}
 
             <div className="flex justify-end gap-2 mt-4">
@@ -220,6 +264,67 @@ export const MeetingsPage: React.FC = () => {
                   </Button>
                 </>
               )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Request Meeting Modal */}
+      {showRequestModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <Card className="p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Request a Meeting
+            </h3>
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">With</label>
+            <select
+              value={requestContact}
+              onChange={(e) => setRequestContact(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {contacts.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input
+                  type="date"
+                  value={requestDate}
+                  onChange={(e) => setRequestDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                <input
+                  type="time"
+                  value={requestTime}
+                  onChange={(e) => setRequestTime(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+            <textarea
+              value={requestNote}
+              onChange={(e) => setRequestNote(e.target.value)}
+              rows={3}
+              placeholder="What would you like to discuss?"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setShowRequestModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={sendMeetingRequest}>
+                Send Request
+              </Button>
             </div>
           </Card>
         </div>
